@@ -5,12 +5,11 @@ import pandas as pd
 st.set_page_config(page_title="NexaMart", layout="wide")
 
 # ==========================================
-# 1. Database Setup (Permanent Admin Updates)
+# 1. Database Setup (Correct Default Images & Users Table)
 # ==========================================
 def init_db():
     conn = sqlite3.connect('nexamart.db')
     c = conn.cursor()
-    # টেবিল না থাকলে তৈরি হবে, কিন্তু ড্র (Drop) করা হবে না যাতে অ্যাডমিন আপডেট মুছে না যায়
     c.execute('''CREATE TABLE IF NOT EXISTS products (
                     id INTEGER PRIMARY KEY AUTOINCREMENT, 
                     name TEXT UNIQUE, 
@@ -24,7 +23,7 @@ def init_db():
                 )''')
     c.execute('CREATE TABLE IF NOT EXISTS users (email TEXT PRIMARY KEY, name TEXT, password TEXT)')
     
-    # প্রথমবার যদি ডাটাবেস ফাঁকা থাকে তবেই ডিফল্ট প্রোডাক্টগুলো বসবে
+    # প্রথমবার বা ডাটাবেস ফাঁকা থাকলে সঠিক ছবিসহ ডিফল্ট প্রোডাক্ট বসবে
     c.execute('SELECT COUNT(*) FROM products')
     if c.fetchone()[0] == 0:
         defaults = [
@@ -70,7 +69,7 @@ if 'cart' not in st.session_state:
     st.session_state.cart = {}
 
 # ==========================================
-# 2. Secret Admin Panel
+# 2. Secret Admin Panel (With Inventory & Registered Users)
 # ==========================================
 if st.query_params.get("admin") == "true":
     st.title("⚙️ NexaMart Admin Panel")
@@ -138,6 +137,17 @@ if st.query_params.get("admin") == "true":
             st.subheader("📦 Live Inventory")
             df_prods = pd.read_sql_query("SELECT * FROM products", conn)
             st.dataframe(df_prods, hide_index=True, use_container_width=True)
+            
+            st.write("---")
+            st.subheader("👥 Registered Users List")
+            try:
+                df_users = pd.read_sql_query("SELECT email, name FROM users", conn)
+                if df_users.empty:
+                    st.info("No registered users yet.")
+                else:
+                    st.dataframe(df_users, hide_index=True, use_container_width=True)
+            except:
+                st.warning("No users table found yet.")
             conn.close()
 
 # ==========================================
