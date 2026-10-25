@@ -10,7 +10,6 @@ st.set_page_config(page_title="NexaMart", layout="wide")
 def init_db():
     conn = sqlite3.connect('nexamart.db')
     c = conn.cursor()
-    # প্রোডাক্ট টেবিলে বিবরণ, আসল দাম, রেটিং এবং স্টক যোগ করা হলো
     c.execute('''CREATE TABLE IF NOT EXISTS products (
                     id INTEGER PRIMARY KEY AUTOINCREMENT, 
                     name TEXT UNIQUE, 
@@ -26,9 +25,9 @@ def init_db():
     
     defaults = [
         ("Wireless Noise-Cancelling Headphones", "Electronics", 3499.0, 5999.0, "Active Noise Cancellation, 40-hour battery life, crystal-clear hands-free calling.", 4.7, 14, "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500"),
-        ("Smart Fitness Watch", "Electronics", 2199.0, 3999.0, "AMOLED Display, 24/7 Heart Rate Monitoring, SpO2 tracker, 7-day battery.", 4.5, 20, "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500"),
-        ("Fresh Organic Apples", "Grocery", 200.0, 250.0, "Fresh, crisp, and juicy organic apples directly from the farm. 1kg pack.", 4.8, 50, "https://images.unsplash.com/photo-1560806887-1e4cd0b6faa6?w=500"),
-        ("Casual Cotton T-Shirt", "Fashion", 500.0, 999.0, "100% pure cotton, breathable fabric, comfortable fit for everyday wear.", 4.3, 30, "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500"),
+        ("Smart Fitness Watch with SpO2", "Electronics", 2199.0, 3999.0, "AMOLED Display, 24/7 Heart Rate Monitoring, SpO2 tracker, 7-day battery backup.", 4.5, 20, "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500"),
+        ("Fresh Organic Apples", "Grocery", 200.0, 250.0, "Fresh, crisp, and juicy organic apples directly from the farm. 1kg premium pack.", 4.8, 50, "https://images.unsplash.com/photo-1560806887-1e4cd0b6faa6?w=500"),
+        ("Casual Cotton T-Shirt", "Fashion", 500.0, 999.0, "100% pure cotton, breathable fabric, comfortable regular fit for everyday wear.", 4.3, 30, "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500"),
         ("USB-C Multiport Hub", "Electronics", 1499.0, 2499.0, "4K HDMI, 3x USB 3.0 ports, Power Delivery fast charging support.", 4.6, 12, "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=500")
     ]
     
@@ -51,7 +50,7 @@ if 'cart' not in st.session_state:
     st.session_state.cart = {}
 
 # ==========================================
-# 2. Advanced Admin Panel (With Specs Input)
+# 2. Secret Admin Panel
 # ==========================================
 if st.query_params.get("admin") == "true":
     st.title("⚙️ NexaMart Admin Panel")
@@ -61,7 +60,7 @@ if st.query_params.get("admin") == "true":
         st.success("Admin Logged In")
         st.write("---")
         
-        tab_add, tab_update, tab_db = st.tabs(["➕ Add New Product", "✏️ Update Specs & Price", "📦 Inventory & Users"])
+        tab_add, tab_update, tab_db = st.tabs(["➕ Add Product", "✏️ Update Specs", "📦 Inventory & Users"])
         
         with tab_add:
             st.subheader("Add Product with Specifications")
@@ -72,7 +71,7 @@ if st.query_params.get("admin") == "true":
                 with col_p1: p = st.number_input("Selling Price (₹)", min_value=1.0)
                 with col_p2: op = st.number_input("Original Price (₹)", min_value=1.0)
                 
-                desc = st.text_area("Product Description & Specs (e.g., Battery life, features)")
+                desc = st.text_area("Product Description & Specs (e.g., Battery life, fabric, freshness)")
                 col_r1, col_r2 = st.columns(2)
                 with col_r1: rat = st.number_input("Rating (1-5)", min_value=1.0, max_value=5.0, value=4.5)
                 with col_r2: stk = st.number_input("Available Stock", min_value=1, value=10)
@@ -122,26 +121,41 @@ if st.query_params.get("admin") == "true":
             conn.close()
 
 # ==========================================
-# 3. Storefront with Specifications Layout
+# 3. Main Storefront (Exact Screenshot Layout)
 # ==========================================
 else:
-    st.markdown("<div style='background-color:#ffe6e6; padding:8px; text-align:center; color:#cc0000;'><b>Festive Sale:</b> Use coupon <b>WELCOME10</b> for 10% off | Free Delivery on orders over ₹999</div>", unsafe_allow_html=True)
-    
-    st.write("")
+    # টপ হেডার ও সার্চ বার
     h_col1, h_col2, h_col3 = st.columns([1, 2, 1])
     with h_col1:
         st.title("🛒 NexaMart")
     with h_col2:
-        search_kw = st.text_input("Search", placeholder="Search for products, brands and specs...", label_visibility="collapsed")
+        search_kw = st.text_input("Search", placeholder="Search for electronics, fashion, groceries, brands...", label_visibility="collapsed")
     with h_col3:
         st.write("")
         if st.session_state.logged_in_email:
             st.success(f"👤 {st.session_state.logged_in_name}")
         else:
-            st.info("👤 Guest User (Login from Sidebar)")
+            st.info("👤 Account (Login in Sidebar)")
+
+    # স্ক্রিনশটের মতো হরিজন্টাল ক্যাটাগরি ট্যাব বা পিল (Category Pills)
+    selected_cat = st.radio(
+        "Categories",
+        ["All Products", "Electronics", "Grocery", "Fashion", "Home & Kitchen"],
+        horizontal=True,
+        label_visibility="collapsed"
+    )
 
     st.write("---")
-    
+
+    # স্ক্রিনশটের মতো আকর্ষণীয় 'Limited Time Offers' ব্যানার
+    with st.container(border=True):
+        st.caption("LIMITED TIME OFFERS")
+        st.header("Elevate Your Everyday Shopping")
+        st.write("Flat 10% off on your first order with coupon **WELCOME10**. Use **SAVE50** for ₹50 off on orders over ₹499.")
+        st.markdown("🏷️ `WELCOME10` (10% Off) &nbsp;&nbsp;|&nbsp;&nbsp; 🏷️ `SAVE50` (₹50 Off) &nbsp;&nbsp;|&nbsp;&nbsp; 🚚 `FREESHIP` (Free Delivery)")
+
+    st.write("---")
+
     with st.sidebar:
         st.header("Customer Profile")
         if st.session_state.logged_in_email is None:
@@ -185,33 +199,36 @@ else:
                 st.rerun()
 
         st.divider()
-        st.header(f"Shopping Cart ({sum(item['qty'] for item in st.session_state.cart.values())})")
+        cart_total_items = sum(item['qty'] for item in st.session_state.cart.values())
+        cart_total_price = sum(details['price'] * details['qty'] for details in st.session_state.cart.values())
+        st.header(f"🛒 Cart ({cart_total_items}) - ₹{cart_total_price:,.2f}")
+        
         if not st.session_state.cart:
             st.write("Your Cart is Empty")
         else:
-            total = 0
             for item, details in list(st.session_state.cart.items()):
                 sub = details['price'] * details['qty']
-                total += sub
                 st.write(f"**{item}** (x{details['qty']}) - ₹{sub}")
                 if st.button(f"Remove {item}", key=f"del_{item}"):
                     del st.session_state.cart[item]
                     st.rerun()
-            st.write(f"**Subtotal: ₹{total:,.2f}**")
 
+    # ডাটাবেস থেকে প্রোডাক্ট লোড করা এবং ফিল্টার করা
     conn = sqlite3.connect('nexamart.db')
     df = pd.read_sql_query("SELECT * FROM products", conn)
     conn.close()
     
-    st.subheader("All Products & Specifications")
-    
+    if selected_cat != "All Products":
+        df = df[df['category'] == selected_cat]
+
     if search_kw:
         df = df[df['name'].str.contains(search_kw, case=False) | df['description'].str.contains(search_kw, case=False)]
 
+    st.subheader(f"Showing Products: {selected_cat}")
+
     if df.empty:
-        st.warning("No products found.")
+        st.warning("No products found in this category.")
     else:
-        # প্রফেশনাল ই-কমার্স স্টাইলে প্রোডাক্ট কার্ড রেন্ডার করা
         for idx, row in df.iterrows():
             with st.container(border=True):
                 col_img, col_info, col_buy = st.columns([1, 2, 1])
@@ -224,17 +241,17 @@ else:
                     st.subheader(row['name'])
                     st.caption(f"Category: {row['category']}")
                     
-                    # রেটিং ও স্টক স্ট্যাটাস (স্ক্রিনশটের মতো)
+                    # রেটিং ও স্টক স্ট্যাটাস
                     st.markdown(f"⭐ **{row['rating']}** | <span style='color:green;'>✓ In Stock ({row['stock']} available units)</span>", unsafe_allow_html=True)
                     
-                    # দাম এবং ডিসকাউন্ট ক্যালকুলেশন
+                    # ডিসকাউন্ট ও দাম
                     if row['original_price'] and row['original_price'] > row['price']:
                         discount = int(((row['original_price'] - row['price']) / row['original_price']) * 100)
                         st.markdown(f"### ₹{row['price']:,.2f} &nbsp; <del style='color:gray;font-size:16px;'>₹{row['original_price']:,.2f}</del> &nbsp; <span style='background-color:#d4edda;color:#155724;padding:2px 6px;font-size:12px;border-radius:4px;'>Save {discount}%</span>", unsafe_allow_html=True)
                     else:
                         st.markdown(f"### ₹{row['price']:,.2f}")
                         
-                    # প্রোডাক্ট স্পেসিফিকেশন ও ব্যাটারি ব্যাকআপ ডিটেইলস
+                    # প্রোডাক্টের নির্দিষ্ট বিবরণ বা স্পেসিফিকেশন (ব্যাটারি ব্যাকআপ, কাপড়ের মান, বা সতেজতা)
                     if row['description']:
                         st.write(f"📝 {row['description']}")
                         
