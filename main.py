@@ -5,7 +5,7 @@ import pandas as pd
 st.set_page_config(page_title="NexaMart", layout="wide")
 
 # ==========================================
-# 1. Database Setup with Specifications
+# 1. Database Setup with Correct Images & Specs
 # ==========================================
 def init_db():
     conn = sqlite3.connect('nexamart.db')
@@ -28,14 +28,15 @@ def init_db():
         ("Smart Fitness Watch with SpO2", "Electronics", 2199.0, 3999.0, "AMOLED Display, 24/7 Heart Rate Monitoring, SpO2 tracker, 7-day battery backup.", 4.5, 20, "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500"),
         ("Fresh Organic Apples", "Grocery", 200.0, 250.0, "Fresh, crisp, and juicy organic apples directly from the farm. 1kg premium pack.", 4.8, 50, "https://images.unsplash.com/photo-1560806887-1e4cd0b6faa6?w=500"),
         ("Casual Cotton T-Shirt", "Fashion", 500.0, 999.0, "100% pure cotton, breathable fabric, comfortable regular fit for everyday wear.", 4.3, 30, "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500"),
-        ("USB-C Multiport Hub", "Electronics", 1499.0, 2499.0, "4K HDMI, 3x USB 3.0 ports, Power Delivery fast charging support.", 4.6, 12, "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=500")
+        ("USB-C Multiport Hub", "Electronics", 1499.0, 2499.0, "4K HDMI, 3x USB 3.0 ports, Power Delivery fast charging support.", 4.6, 12, "https://images.unsplash.com/photo-1544652478-6653e09f18a2?w=500")
     ]
     
     for p in defaults:
         try:
             c.execute('INSERT INTO products (name, category, price, original_price, description, rating, stock, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', p)
         except sqlite3.IntegrityError:
-            pass
+            # যদি প্রোডাক্ট আগে থেকেই থাকে, তবে সঠিক ছবি ও ডিটেইলস আপডেট করে দেবে
+            c.execute('UPDATE products SET price=?, original_price=?, description=?, rating=?, stock=?, image=? WHERE name=?', (p[2], p[3], p[4], p[5], p[6], p[7], p[0]))
             
     conn.commit()
     conn.close()
@@ -71,7 +72,7 @@ if st.query_params.get("admin") == "true":
                 with col_p1: p = st.number_input("Selling Price (₹)", min_value=1.0)
                 with col_p2: op = st.number_input("Original Price (₹)", min_value=1.0)
                 
-                desc = st.text_area("Product Description & Specs (e.g., Battery life, fabric, freshness)")
+                desc = st.text_area("Product Description & Specs")
                 col_r1, col_r2 = st.columns(2)
                 with col_r1: rat = st.number_input("Rating (1-5)", min_value=1.0, max_value=5.0, value=4.5)
                 with col_r2: stk = st.number_input("Available Stock", min_value=1, value=10)
@@ -121,10 +122,9 @@ if st.query_params.get("admin") == "true":
             conn.close()
 
 # ==========================================
-# 3. Main Storefront (Exact Screenshot Layout)
+# 3. Main Storefront Layout
 # ==========================================
 else:
-    # টপ হেডার ও সার্চ বার
     h_col1, h_col2, h_col3 = st.columns([1, 2, 1])
     with h_col1:
         st.title("🛒 NexaMart")
@@ -137,7 +137,6 @@ else:
         else:
             st.info("👤 Account (Login in Sidebar)")
 
-    # স্ক্রিনশটের মতো হরিজন্টাল ক্যাটাগরি ট্যাব বা পিল (Category Pills)
     selected_cat = st.radio(
         "Categories",
         ["All Products", "Electronics", "Grocery", "Fashion", "Home & Kitchen"],
@@ -147,7 +146,6 @@ else:
 
     st.write("---")
 
-    # স্ক্রিনশটের মতো আকর্ষণীয় 'Limited Time Offers' ব্যানার
     with st.container(border=True):
         st.caption("LIMITED TIME OFFERS")
         st.header("Elevate Your Everyday Shopping")
@@ -213,7 +211,6 @@ else:
                     del st.session_state.cart[item]
                     st.rerun()
 
-    # ডাটাবেস থেকে প্রোডাক্ট লোড করা এবং ফিল্টার করা
     conn = sqlite3.connect('nexamart.db')
     df = pd.read_sql_query("SELECT * FROM products", conn)
     conn.close()
@@ -241,17 +238,14 @@ else:
                     st.subheader(row['name'])
                     st.caption(f"Category: {row['category']}")
                     
-                    # রেটিং ও স্টক স্ট্যাটাস
                     st.markdown(f"⭐ **{row['rating']}** | <span style='color:green;'>✓ In Stock ({row['stock']} available units)</span>", unsafe_allow_html=True)
                     
-                    # ডিসকাউন্ট ও দাম
                     if row['original_price'] and row['original_price'] > row['price']:
                         discount = int(((row['original_price'] - row['price']) / row['original_price']) * 100)
                         st.markdown(f"### ₹{row['price']:,.2f} &nbsp; <del style='color:gray;font-size:16px;'>₹{row['original_price']:,.2f}</del> &nbsp; <span style='background-color:#d4edda;color:#155724;padding:2px 6px;font-size:12px;border-radius:4px;'>Save {discount}%</span>", unsafe_allow_html=True)
                     else:
                         st.markdown(f"### ₹{row['price']:,.2f}")
                         
-                    # প্রোডাক্টের নির্দিষ্ট বিবরণ বা স্পেসিফিকেশন (ব্যাটারি ব্যাকআপ, কাপড়ের মান, বা সতেজতা)
                     if row['description']:
                         st.write(f"📝 {row['description']}")
                         
