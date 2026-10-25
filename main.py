@@ -36,40 +36,73 @@ if 'cart' not in st.session_state:
     st.session_state.cart = {}
 
 # ==========================================
-# 2. Secret Admin Panel
+# 2. Advanced Admin Panel
 # ==========================================
 if st.query_params.get("admin") == "true":
     st.title("⚙️ NexaMart Admin Panel")
     admin_pass = st.text_input("Enter Password:", type="password")
+    
     if admin_pass == "sourav123":
         st.success("Admin Logged In")
-        col1, col2 = st.columns([1, 2])
-        with col1:
-            st.subheader("Add Product")
-            with st.form("add"):
+        st.write("---")
+        
+        # অ্যাডমিন প্যানেলে ৩টি নতুন ট্যাব তৈরি করা হলো
+        tab_add, tab_update, tab_db = st.tabs(["➕ Add New Product", "✏️ Update Product", "📦 Inventory & Users"])
+        
+        with tab_add:
+            st.subheader("Add Product to Store")
+            with st.form("add_form"):
                 n = st.text_input("Name")
                 c = st.selectbox("Category", ["Electronics", "Grocery", "Fashion", "Home & Kitchen", "Beauty", "Books"])
-                p = st.number_input("Price", min_value=1)
-                img = st.text_input("Image URL")
-                if st.form_submit_button("Add to Store"):
-                    conn = sqlite3.connect('nexamart.db')
-                    conn.cursor().execute('INSERT INTO products (name, category, price, image) VALUES (?, ?, ?, ?)', (n, c, p, img))
-                    conn.commit()
-                    conn.close()
-                    st.rerun()
-        with col2:
+                p = st.number_input("Price (₹)", min_value=1)
+                img = st.text_input("Image URL (Paste Link)")
+                if st.form_submit_button("Add Product"):
+                    try:
+                        conn = sqlite3.connect('nexamart.db')
+                        conn.cursor().execute('INSERT INTO products (name, category, price, image) VALUES (?, ?, ?, ?)', (n, c, p, img))
+                        conn.commit()
+                        conn.close()
+                        st.success(f"✅ '{n}' Added Successfully!")
+                        st.rerun()
+                    except:
+                        st.error("Error! Product name might already exist.")
+                        
+        with tab_update:
+            st.subheader("Update Existing Product Image or Price")
             conn = sqlite3.connect('nexamart.db')
-            st.subheader("📦 Inventory")
+            all_products_df = pd.read_sql_query("SELECT name FROM products", conn)
+            
+            if not all_products_df.empty:
+                # প্রোডাক্ট সিলেক্ট করার ড্রপডাউন
+                selected_product = st.selectbox("Select a Product to Update:", all_products_df['name'].tolist())
+                
+                # সিলেক্ট করা প্রোডাক্টের পুরনো ডেটা তুলে আনা
+                curr_data = conn.cursor().execute("SELECT price, image FROM products WHERE name=?", (selected_product,)).fetchone()
+                
+                with st.form("update_form"):
+                    new_price = st.number_input("Update Price (₹)", value=float(curr_data[0]), min_value=1.0)
+                    new_image = st.text_input("New Image URL", value=curr_data[1] if curr_data[1] else "")
+                    
+                    if st.form_submit_button("Save Changes"):
+                        conn.cursor().execute("UPDATE products SET price=?, image=? WHERE name=?", (new_price, new_image, selected_product))
+                        conn.commit()
+                        st.success(f"✅ '{selected_product}' Updated Successfully!")
+                        st.rerun()
+            conn.close()
+            
+        with tab_db:
+            conn = sqlite3.connect('nexamart.db')
+            st.subheader("📦 Live Inventory")
             df_prods = pd.read_sql_query("SELECT * FROM products", conn)
-            st.dataframe(df_prods, hide_index=True)
+            st.dataframe(df_prods, hide_index=True, use_container_width=True)
             
             st.subheader("👥 Registered Users")
             df_users = pd.read_sql_query("SELECT email, name, password FROM users", conn)
-            st.dataframe(df_users, hide_index=True)
+            st.dataframe(df_users, hide_index=True, use_container_width=True)
             conn.close()
 
 # ==========================================
-# 3. NexaMart Original Layout
+# 3. NexaMart Original Layout (Store & Checkout)
 # ==========================================
 else:
     st.markdown("<div style='background-color:#ffe6e6; padding:8px; text-align:center; color:#cc0000;'><b>Festive Sale:</b> Use coupon <b>WELCOME10</b> for 10% off | Free Delivery on orders over ₹999</div>", unsafe_allow_html=True)
@@ -100,20 +133,16 @@ else:
             st.write("Sign in with any email to proceed with your NexaMart order.")
             tab1, tab2 = st.tabs(["Login", "Sign Up"])
             
-            # --- SMART LOGIN SYSTEM ---
             with tab1:
                 l_e = st.text_input("Email")
                 l_p = st.text_input("Password", type="password")
                 if st.button("Login", use_container_width=True):
                     if l_e and l_p:
-                        # ডাটা ক্লিনিং (অদৃশ্য স্পেস ও ক্যাপিটাল লেটার দূর করা)
                         clean_email = l_e.strip().lower()
                         clean_pass = l_p.strip()
-                        
                         conn = sqlite3.connect('nexamart.db')
                         user_data = conn.cursor().execute("SELECT name, password FROM users WHERE email=?", (clean_email,)).fetchone()
                         conn.close()
-                        
                         if user_data:
                             db_name, db_pass = user_data
                             if db_pass == clean_pass:
@@ -121,20 +150,18 @@ else:
                                 st.session_state.logged_in_name = db_name
                                 st.rerun()
                             else:
-                                st.error("❌ Incorrect Password! (পাসওয়ার্ড ভুল হচ্ছে)")
+                                st.error("❌ Incorrect Password!")
                         else:
-                            st.error("❌ Email not registered! (এই ইমেইলটি ডাটাবেসে নেই)")
+                            st.error("❌ Email not registered!")
                     else:
                         st.warning("Please enter both email and password.")
             
-            # --- SMART SIGN UP SYSTEM ---
             with tab2:
                 s_n = st.text_input("Full Name")
                 s_e = st.text_input("New Email")
                 s_p = st.text_input("New Password", type="password")
                 if st.button("Create Profile", use_container_width=True):
                     if s_n and s_e and s_p:
-                        # ডাটা ক্লিনিং 
                         clean_email = s_e.strip().lower()
                         clean_pass = s_p.strip()
                         try:
@@ -200,7 +227,10 @@ else:
         for idx, row in df.iterrows():
             with cols[idx % 4]:
                 with st.container(border=True):
-                    st.image(row["image"], use_container_width=True)
+                    if row["image"]:
+                        st.image(row["image"], use_container_width=True)
+                    else:
+                        st.info("Image not available")
                     st.write(f"**{row['name']}**")
                     st.caption(row['category'])
                     st.write(f"**₹{row['price']}**")
@@ -213,9 +243,11 @@ else:
 
     st.write("---")
     st.header("Secure Checkout")
+    
     if st.session_state.cart:
         total = sum(details['price'] * details['qty'] for details in st.session_state.cart.values())
         col_c1, col_c2 = st.columns(2)
+        
         with col_c1:
             st.subheader("Order Summary")
             st.write(f"Items Subtotal: ₹{total}")
@@ -225,14 +257,30 @@ else:
             elif cpn: st.error("Invalid code")
             final = total - discount
             st.write(f"**Payable Amount: ₹{final}**")
+            
         with col_c2:
-            st.write("")
-            st.write("")
+            st.subheader("Payment Options")
             if st.session_state.logged_in_email is None:
-                st.warning("Please sign in from the sidebar to proceed.")
+                st.warning("Please sign in from the sidebar to proceed with payment.")
             else:
-                if st.button("Confirm Order", type="primary", use_container_width=True):
-                    st.success(f"Order Confirmed for {st.session_state.logged_in_name}! ID: NM-00123")
+                pay_method = st.radio("Select Payment Method:", ["Credit / Debit Card", "UPI", "Cash on Delivery"])
+                
+                with st.container(border=True):
+                    if pay_method == "Credit / Debit Card":
+                        st.text_input("Card Number", placeholder="XXXX XXXX XXXX XXXX")
+                        c_exp, c_cvv = st.columns(2)
+                        with c_exp: st.text_input("Expiry Date", placeholder="MM/YY")
+                        with c_cvv: st.text_input("CVV", type="password", placeholder="XXX")
+                    
+                    elif pay_method == "UPI":
+                        st.text_input("Enter UPI ID", placeholder="example@okhdfcbank")
+                        
+                    elif pay_method == "Cash on Delivery":
+                        st.info("💵 You can pay with cash when your order arrives.")
+
+                st.write("")
+                if st.button(f"Pay ₹{final} & Place Order", type="primary", use_container_width=True):
+                    st.success(f"Payment Successful! 🎉 Order Confirmed for {st.session_state.logged_in_name}. Invoice ID: NM-00123")
                     st.balloons()
                     st.session_state.cart = {}
     else:
