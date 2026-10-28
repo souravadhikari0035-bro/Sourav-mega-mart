@@ -30,22 +30,7 @@ def init_db():
             # Electronics
             ("Wireless Noise-Cancelling Headphones", "Electronics", 3499.0, 5999.0, "Active Noise Cancellation, 40-hour battery life, crystal-clear hands-free calling.", 4.7, 14, "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500"),
             ("Smart Fitness Watch with SpO2", "Electronics", 2199.0, 3999.0, "AMOLED Display, 24/7 Heart Rate Monitoring, SpO2 tracker, 7-day battery backup.", 4.5, 20, "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500"),
-            ("The USB-C Hub with HDMI, USB 3.0 Ports & USB-C Power Delivery – Black-i expands a single USB-C port into essential productivity connections. With an HDMI port for external displays, multiple USB 3.0 ports for high-speed data transfer, and USB-C PD charging support, this hub turns your laptop or tablet into a complete workstation.
-
-Whether you’re presenting, streaming, transferring files, or charging your device simultaneously, this hub offers plug-and-play convenience with broad compatibility across Windows, macOS, and other USB-C devices.
-
-Built for everyday use and backed by a 3-Year Replacement Warranty, it’s the perfect companion for home, office, or on-the-go setups.
-
-Feature / Specification	Details
-Interface	USB-C input
-Display Output	HDMI (supports up to 4K)
-USB Ports	Multiple USB 3.0 ports (high-speed data transfer)
-Power Delivery	USB-C PD supported
-Compatibility	Windows, macOS, ChromeOS & USB-C devices
-Plug & Play	Yes — no drivers required
-Usage	Office, work, presentations, data transfer
-Build	Compact & lightweight
-Warranty	3-Year Replacement Warranty"),
+            ("The USB-C Hub with HDMI, USB 3.0 Ports & USB-C Power Delivery – Black-i expands a single USB-C port into essential productivity connections. With an HDMI port for external displays, multiple USB 3.0 ports for high-speed data transfer, and USB-C PD charging support, this hub turns your laptop or tablet into a complete workstation."),
             ("https://vlebazaar.in/image/cache/catalog/Ant-Esports-MK1300-V2-Portable-60-Percent-Mechanical-Keyboard-Compact-61/Ant-Esports-MK1300-V2-Portable-60-Percent-Mechanical-Keyboard-Compact-61-Keys-Mi-1500x1500.jpg"),
             
             # Grocery
