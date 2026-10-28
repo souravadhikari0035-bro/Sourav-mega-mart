@@ -30,8 +30,7 @@ def init_db():
             # Electronics
             ("Wireless Noise-Cancelling Headphones", "Electronics", 3499.0, 5999.0, "Active Noise Cancellation, 40-hour battery life, crystal-clear hands-free calling.", 4.7, 14, "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500"),
             ("Smart Fitness Watch with SpO2", "Electronics", 2199.0, 3999.0, "AMOLED Display, 24/7 Heart Rate Monitoring, SpO2 tracker, 7-day battery backup.", 4.5, 20, "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500"),
-            ("The USB-C Hub with HDMI, USB 3.0 Ports & USB-C Power Delivery – Black-i expands a single USB-C port into essential productivity connections. With an HDMI port for external displays, multiple USB 3.0 ports for high-speed data transfer, and USB-C PD charging support, this hub turns your laptop or tablet into a complete workstation."),
-            ("https://vlebazaar.in/image/cache/catalog/Ant-Esports-MK1300-V2-Portable-60-Percent-Mechanical-Keyboard-Compact-61/Ant-Esports-MK1300-V2-Portable-60-Percent-Mechanical-Keyboard-Compact-61-Keys-Mi-1500x1500.jpg"),
+            ("USB-C Multiport Hub Adapter", "Electronics", 1499.0, 2499.0, "The USB-C Hub with HDMI, USB 3.0 Ports & USB-C Power Delivery. Features: 4K HDMI, USB 3.0 ports, PD supported, Plug & Play. Windows/macOS compatible. 3-Year Warranty.", 4.6, 12, "https://vlebazaar.in/image/cache/catalog/Ant-Esports-MK1300-V2-Portable-60-Percent-Mechanical-Keyboard-Compact-61/Ant-Esports-MK1300-V2-Portable-60-Percent-Mechanical-Keyboard.jpg"),
             
             # Grocery
             ("Fresh Organic Apples (1kg)", "Grocery", 200.0, 250.0, "Fresh, crisp, and juicy organic apples directly from the farm. Premium quality pack.", 4.8, 50, "https://images.unsplash.com/photo-1560806887-1e4cd0b6faa6?w=500"),
