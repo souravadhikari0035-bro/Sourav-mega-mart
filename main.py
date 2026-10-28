@@ -30,8 +30,23 @@ def init_db():
             # Electronics
             ("Wireless Noise-Cancelling Headphones", "Electronics", 3499.0, 5999.0, "Active Noise Cancellation, 40-hour battery life, crystal-clear hands-free calling.", 4.7, 14, "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500"),
             ("Smart Fitness Watch with SpO2", "Electronics", 2199.0, 3999.0, "AMOLED Display, 24/7 Heart Rate Monitoring, SpO2 tracker, 7-day battery backup.", 4.5, 20, "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500"),
-            ("USB-C Multiport Hub Adapter", "Electronics", 1499.0, 2499.0, "4K HDMI, 3x USB 3.0 ports, Power Delivery fast charging support.", 4.6, 12, "https://images.unsplash.com/photo-1544652478-6653e09f18a2?w=500"),
-            ("Mechanical Gaming Keyboard", "Electronics", 2899.0, 4999.0, "RGB Backlit, Blue Switches, Anti-ghosting keys for ultimate gaming experience.", 4.8, 15, "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=500"),
+            ("The USB-C Hub with HDMI, USB 3.0 Ports & USB-C Power Delivery – Black-i expands a single USB-C port into essential productivity connections. With an HDMI port for external displays, multiple USB 3.0 ports for high-speed data transfer, and USB-C PD charging support, this hub turns your laptop or tablet into a complete workstation.
+
+Whether you’re presenting, streaming, transferring files, or charging your device simultaneously, this hub offers plug-and-play convenience with broad compatibility across Windows, macOS, and other USB-C devices.
+
+Built for everyday use and backed by a 3-Year Replacement Warranty, it’s the perfect companion for home, office, or on-the-go setups.
+
+Feature / Specification	Details
+Interface	USB-C input
+Display Output	HDMI (supports up to 4K)
+USB Ports	Multiple USB 3.0 ports (high-speed data transfer)
+Power Delivery	USB-C PD supported
+Compatibility	Windows, macOS, ChromeOS & USB-C devices
+Plug & Play	Yes — no drivers required
+Usage	Office, work, presentations, data transfer
+Build	Compact & lightweight
+Warranty	3-Year Replacement Warranty"),
+            ("https://vlebazaar.in/image/cache/catalog/Ant-Esports-MK1300-V2-Portable-60-Percent-Mechanical-Keyboard-Compact-61/Ant-Esports-MK1300-V2-Portable-60-Percent-Mechanical-Keyboard-Compact-61-Keys-Mi-1500x1500.jpg"),
             
             # Grocery
             ("Fresh Organic Apples (1kg)", "Grocery", 200.0, 250.0, "Fresh, crisp, and juicy organic apples directly from the farm. Premium quality pack.", 4.8, 50, "https://images.unsplash.com/photo-1560806887-1e4cd0b6faa6?w=500"),
@@ -52,7 +67,7 @@ def init_db():
             ("Educational Building Blocks Set", "Toys & Kids", 799.0, 1499.0, "Creative learning toy for kids, safe non-toxic plastic material.", 4.6, 20, "https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=500"),
             
             # Books
-            ("Atomic Habits by James Clear", "Books", 499.0, 799.0, "Bestselling self-improvement and practical habit-building guide book.", 4.9, 35, "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500")
+            ("Atomic Habits by James Clear", "Books", 499.0, 799.0, "Bestselling self-improvement and practical habit-building guide book.", 4.9, 35, "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500"),           
         ]
         c.executemany('INSERT INTO products (name, category, price, original_price, description, rating, stock, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', defaults)
     
