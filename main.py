@@ -5,10 +5,11 @@ import pandas as pd
 st.set_page_config(page_title="NexaMart", layout="wide")
 
 # ==========================================
-# 1. Database Setup (Safe Permanent Update)
+# 1. Database Setup (Renamed to v2 for Fresh Image Load)
 # ==========================================
 def init_db():
-    conn = sqlite3.connect('nexamart.db')
+    # Changed database name to force Streamlit to create a new one with new images
+    conn = sqlite3.connect('nexamart_v2.db')
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS products (
                     id INTEGER PRIMARY KEY AUTOINCREMENT, 
@@ -52,7 +53,6 @@ def init_db():
         ("Atomic Habits by James Clear", "Books", 499.0, 799.0, "Bestselling self-improvement and practical habit-building guide book.", 4.9, 35, "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500")
     ]
     
-    # NEW LOGIC: This correctly updates images WITHOUT breaking the "Add to Cart" button!
     for p in defaults:
         c.execute("SELECT id FROM products WHERE name=?", (p[0],))
         data = c.fetchone()
@@ -105,7 +105,7 @@ if st.query_params.get("admin") == "true":
                 
                 if st.form_submit_button("Add Product"):
                     try:
-                        conn = sqlite3.connect('nexamart.db')
+                        conn = sqlite3.connect('nexamart_v2.db')
                         conn.cursor().execute('INSERT INTO products (name, category, price, original_price, description, rating, stock, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (n, c, p, op, desc, rat, stk, img))
                         conn.commit()
                         conn.close()
@@ -116,7 +116,7 @@ if st.query_params.get("admin") == "true":
                         
         with tab_update:
             st.subheader("Update Product Details")
-            conn = sqlite3.connect('nexamart.db')
+            conn = sqlite3.connect('nexamart_v2.db')
             all_products_df = pd.read_sql_query("SELECT name FROM products", conn)
             
             if not all_products_df.empty:
@@ -139,7 +139,7 @@ if st.query_params.get("admin") == "true":
             conn.close()
             
         with tab_db:
-            conn = sqlite3.connect('nexamart.db')
+            conn = sqlite3.connect('nexamart_v2.db')
             st.subheader("📦 Live Inventory")
             df_prods = pd.read_sql_query("SELECT * FROM products", conn)
             st.dataframe(df_prods, hide_index=True, use_container_width=True)
@@ -201,7 +201,7 @@ else:
                     if l_e and l_p:
                         clean_email = l_e.strip().lower()
                         clean_pass = l_p.strip()
-                        conn = sqlite3.connect('nexamart.db')
+                        conn = sqlite3.connect('nexamart_v2.db')
                         user_data = conn.cursor().execute("SELECT name, password FROM users WHERE email=?", (clean_email,)).fetchone()
                         conn.close()
                         if user_data and user_data[1] == clean_pass:
@@ -217,7 +217,7 @@ else:
                 if st.button("Create Profile", use_container_width=True):
                     if s_n and s_e and s_p:
                         try:
-                            conn = sqlite3.connect('nexamart.db')
+                            conn = sqlite3.connect('nexamart_v2.db')
                             conn.cursor().execute('INSERT INTO users VALUES (?, ?, ?)', (s_e.strip().lower(), s_n, s_p.strip()))
                             conn.commit()
                             conn.close()
@@ -247,7 +247,7 @@ else:
                     del st.session_state.cart[item]
                     st.rerun()
 
-    conn = sqlite3.connect('nexamart.db')
+    conn = sqlite3.connect('nexamart_v2.db')
     df = pd.read_sql_query("SELECT * FROM products", conn)
     conn.close()
     
@@ -288,7 +288,6 @@ else:
                 with col_buy:
                     st.write("")
                     st.write("")
-                    # NEW KEY: Using row['name'] so the button never breaks!
                     if st.button("Add to Cart 🛒", key=f"add_cart_{row['name']}", use_container_width=True):
                         if st.session_state.logged_in_email is None:
                             st.warning("⚠️ Please login or sign up from the sidebar to add products to your cart!")
@@ -326,13 +325,36 @@ else:
                         st.subheader("2. Select Payment Method")
                         pay_method = st.radio("Choose option:", ["Cash on Delivery (COD)", "Instant UPI / QR", "Debit / Credit Card"], label_visibility="collapsed")
                         
+                        # Dynamic Payment Details inside the form
+                        payment_valid = True
+                        if pay_method == "Instant UPI / QR":
+                            st.info("Scan to Pay or Enter UPI ID")
+                            # Dummy QR Code image
+                            st.image("https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg", width=120)
+                            upi_id = st.text_input("Enter your UPI ID (e.g., 9876543210@ybl)")
+                            if not upi_id:
+                                payment_valid = False
+                                
+                        elif pay_method == "Debit / Credit Card":
+                            c_num = st.text_input("Card Number", placeholder="XXXX XXXX XXXX XXXX")
+                            col_exp, col_cvv = st.columns(2)
+                            with col_exp:
+                                c_exp = st.text_input("Expiry Date", placeholder="MM/YY")
+                            with col_cvv:
+                                c_cvv = st.text_input("CVV", type="password", placeholder="123")
+                            if not c_num or not c_exp or not c_cvv:
+                                payment_valid = False
+                        
                         if st.form_submit_button("Place Secure Order", use_container_width=True, type="primary"):
                             if f_name and f_phone and f_email and f_address and f_city and f_pin:
-                                st.success(f"🎉 Order Confirmed for {f_name}! We will ship to {f_city}.")
-                                st.balloons()
-                                st.session_state.cart = {}
+                                if payment_valid or pay_method == "Cash on Delivery (COD)":
+                                    st.success(f"✅ Order Confirmed for {f_name}! We will ship to {f_city}.")
+                                    # Removed balloons, added professional message
+                                    st.session_state.cart = {}
+                                else:
+                                    st.error("⚠️ Please provide the required payment details (UPI ID or Card Info).")
                             else:
-                                st.warning("⚠️ Please fill in all mandatory fields marked with *")
+                                st.warning("⚠️ Please fill in all mandatory address fields marked with *")
                 with col_summary:
                     st.subheader("Order Summary")
                     st.write("---")
