@@ -5,7 +5,7 @@ import pandas as pd
 st.set_page_config(page_title="NexaMart", layout="wide")
 
 # ==========================================
-# 1. Database Setup (Correct Default Images & Users Table)
+# 1. Database Setup (Permanent & Auto-Correcting Images)
 # ==========================================
 def init_db():
     conn = sqlite3.connect('nexamart.db')
@@ -23,43 +23,47 @@ def init_db():
                 )''')
     c.execute('CREATE TABLE IF NOT EXISTS users (email TEXT PRIMARY KEY, name TEXT, password TEXT)')
     
-    # প্রথমবার বা ডাটাবেস ফাঁকা থাকলে সঠিক ছবিসহ ডিফল্ট প্রোডাক্ট বসবে
-    c.execute('SELECT COUNT(*) FROM products')
-    if c.fetchone()[0] == 0:
-        defaults = [
-            # Electronics
-            ("Wireless Noise-Cancelling Headphones", "Electronics", 3499.0, 5999.0, "Active Noise Cancellation, 40-hour battery life, crystal-clear hands-free calling.", 4.7, 14, "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500"),
-            ("Smart Fitness Watch with SpO2", "Electronics", 2199.0, 3999.0, "AMOLED Display, 24/7 Heart Rate Monitoring, SpO2 tracker, 7-day battery backup.", 4.5, 20, "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500"),
-            ("USB-C Multiport Hub Adapter", "Electronics", 1499.0, 2499.0, "The USB-C Hub with HDMI, USB 3.0 Ports & USB-C Power Delivery. Features: 4K HDMI, USB 3.0 ports, PD supported, Plug & Play. Windows/macOS compatible. 3-Year Warranty.", 4.6, 12, "https://vlebazaar.in/image/cache/catalog/Ant-Esports-MK1300-V2-Portable-60-Percent-Mechanical-Keyboard-Compact-61/Ant-Esports-MK1300-V2-Portable-60-Percent-Mechanical-Keyboard.jpg"),
-            
-            # Grocery
-            ("Fresh Organic Apples (1kg)", "Grocery", 200.0, 250.0, "Fresh, crisp, and juicy organic apples directly from the farm. Premium quality pack.", 4.8, 50, "https://images.unsplash.com/photo-1560806887-1e4cd0b6faa6?w=500"),
-            ("Organic Fresh Bananas (1 Dozen)", "Grocery", 90.0, 120.0, "Sweet, energy-rich, farm-fresh bananas packed with natural nutrients.", 4.6, 40, "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=500"),
-            ("Premium Almonds Dry Fruits (500g)", "Grocery", 450.0, 650.0, "Rich in protein and fiber, crunchy and healthy premium quality almonds.", 4.9, 30, "https://images.unsplash.com/photo-1508061253366-f7da154b6d46?w=500"),
-            
-            # Fashion
-            ("Casual Cotton White T-Shirt", "Fashion", 500.0, 999.0, "100% pure cotton, breathable fabric, comfortable regular fit for everyday wear.", 4.3, 30, "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500"),
-            ("Men's Slim Fit Denim Jeans", "Fashion", 1299.0, 2499.0, "Stretchable denim fabric, stylish casual wear, durable stitching.", 4.4, 25, "https://images.unsplash.com/photo-1542272604-787c3835535d?w=500"),
-            ("Unisex Classic Winter Hoodie", "Fashion", 1199.0, 2199.0, "Fleece-lined inner fabric, cozy, warm, and stylish winter wear.", 4.5, 18, "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=500"),
-            
-            # Home & Kitchen
-            ("Non-Stick Cookware Set (3 Pcs)", "Home & Kitchen", 1899.0, 3499.0, "PFOA-free non-stick coating, induction compatible, sturdy heat-resistant handles.", 4.6, 15, "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=500"),
-            ("Insulated Stainless Steel Water Bottle", "Home & Kitchen", 699.0, 1299.0, "Keeps water cold for 24 hours and hot for 12 hours, leak-proof design.", 4.7, 22, "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=500"),
-            
-            # Toys & Kids
-            ("Kids Remote Control Racing Car", "Toys & Kids", 999.0, 1999.0, "High-speed rechargeable RC car with LED lights and anti-skid rubber tires.", 4.4, 25, "https://images.unsplash.com/photo-1594787318286-3d835c1d207f?w=500"),
-            ("Educational Building Blocks Set", "Toys & Kids", 799.0, 1499.0, "Creative learning toy for kids, safe non-toxic plastic material.", 4.6, 20, "https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=500"),
-            
-            # Books
-            ("Atomic Habits by James Clear", "Books", 499.0, 799.0, "Bestselling self-improvement and practical habit-building guide book.", 4.9, 35, "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500"),           
-        ]
-        c.executemany('INSERT INTO products (name, category, price, original_price, description, rating, stock, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', defaults)
+    # Permanent default product list with perfect images and descriptions
+    defaults = [
+        # Electronics
+        ("Wireless Noise-Cancelling Headphones", "Electronics", 3499.0, 5999.0, "Active Noise Cancellation, 40-hour battery life, crystal-clear hands-free calling.", 4.7, 14, "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500"),
+        ("Smart Fitness Watch with SpO2", "Electronics", 2199.0, 3999.0, "AMOLED Display, 24/7 Heart Rate Monitoring, SpO2 tracker, 7-day battery backup.", 4.5, 20, "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500"),
+        ("USB-C Multiport Hub Adapter", "Electronics", 1499.0, 2499.0, "The USB-C Hub with HDMI, USB 3.0 Ports & USB-C Power Delivery. Features: 4K HDMI, USB 3.0 ports, PD supported.", 4.6, 12, "https://vlebazaar.in/image/cache/catalog/Ant-Esports-MK1300-V2-Portable-60-Percent-Mechanical-Keyboard-Compact-61/Ant-Esports-MK1300-V2-Portable-60-Percent-Mechanical-Keyboard.jpg"),
+        ("Mechanical Gaming Keyboard", "Electronics", 2899.0, 4999.0, "RGB Backlit, Blue Switches, Anti-ghosting keys for ultimate gaming experience.", 4.8, 15, "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=500"),
+        
+        # Grocery
+        ("Fresh Organic Apples (1kg)", "Grocery", 200.0, 250.0, "Fresh, crisp, and juicy organic apples directly from the farm. Premium quality pack.", 4.8, 50, "https://images.unsplash.com/photo-1560806887-1e4cd0b6faa6?w=500"),
+        ("Organic Fresh Bananas (1 Dozen)", "Grocery", 90.0, 120.0, "Sweet, energy-rich, farm-fresh bananas packed with natural nutrients.", 4.6, 40, "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=500"),
+        ("Premium Almonds Dry Fruits (500g)", "Grocery", 450.0, 650.0, "Rich in protein and fiber, crunchy and healthy premium quality almonds.", 4.9, 30, "https://images.unsplash.com/photo-1508061253366-f7da154b6d46?w=500"),
+        
+        # Fashion
+        ("Casual Cotton White T-Shirt", "Fashion", 500.0, 999.0, "100% pure cotton, breathable fabric, comfortable regular fit for everyday wear.", 4.3, 30, "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500"),
+        ("Men's Slim Fit Denim Jeans", "Fashion", 1299.0, 2499.0, "Stretchable denim fabric, stylish casual wear, durable stitching.", 4.4, 25, "https://images.unsplash.com/photo-1542272604-787c3835535d?w=500"),
+        ("Unisex Classic Winter Hoodie", "Fashion", 1199.0, 2199.0, "Fleece-lined inner fabric, cozy, warm, and stylish winter wear.", 4.5, 18, "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=500"),
+        
+        # Home & Kitchen
+        ("Non-Stick Cookware Set (3 Pcs)", "Home & Kitchen", 1899.0, 3499.0, "PFOA-free non-stick coating, induction compatible, sturdy heat-resistant handles.", 4.6, 15, "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=500"),
+        ("Insulated Stainless Steel Water Bottle", "Home & Kitchen", 699.0, 1299.0, "Keeps water cold for 24 hours and hot for 12 hours, leak-proof design.", 4.7, 22, "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=500"),
+        
+        # Toys & Kids
+        ("Kids Remote Control Racing Car", "Toys & Kids", 999.0, 1999.0, "High-speed rechargeable RC car with LED lights and anti-skid rubber tires.", 4.4, 25, "https://images.unsplash.com/photo-1594787318286-3d835c1d207f?w=500"),
+        ("Educational Building Blocks Set", "Toys & Kids", 799.0, 1499.0, "Creative learning toy for kids, safe non-toxic plastic material.", 4.6, 20, "https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=500"),
+        
+        # Books
+        ("Atomic Habits by James Clear", "Books", 499.0, 799.0, "Bestselling self-improvement and practical habit-building guide book.", 4.9, 35, "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500")
+    ]
     
+    # Using INSERT OR REPLACE ensures correct images and data stay permanently updated
+    for p in defaults:
+        c.execute('''INSERT OR REPLACE INTO products (name, category, price, original_price, description, rating, stock, image) 
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', p)
+                     
     conn.commit()
     conn.close()
 
 init_db()
 
+# Initialize Session States
 if 'logged_in_email' not in st.session_state:
     st.session_state.logged_in_email = None
 if 'logged_in_name' not in st.session_state:
@@ -68,7 +72,7 @@ if 'cart' not in st.session_state:
     st.session_state.cart = {}
 
 # ==========================================
-# 2. Secret Admin Panel (With Inventory & Registered Users)
+# 2. Secret Admin Panel (Inventory & Registered Users)
 # ==========================================
 if st.query_params.get("admin") == "true":
     st.title("⚙️ NexaMart Admin Panel")
@@ -281,6 +285,7 @@ else:
                 with col_buy:
                     st.write("")
                     st.write("")
+                    # English Warning if not logged in
                     if st.button("Add to Cart 🛒", key=f"add_{row['id']}", use_container_width=True):
                         if st.session_state.logged_in_email is None:
                             st.warning("⚠️ Please login or sign up from the sidebar to add products to your cart!")
