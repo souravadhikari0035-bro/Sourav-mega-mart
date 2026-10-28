@@ -5,7 +5,7 @@ import pandas as pd
 st.set_page_config(page_title="NexaMart", layout="wide")
 
 # ==========================================
-# 1. Database Setup (Permanent & Auto-Correcting Images)
+# 1. Database Setup (Safe Permanent Update)
 # ==========================================
 def init_db():
     conn = sqlite3.connect('nexamart.db')
@@ -23,7 +23,6 @@ def init_db():
                 )''')
     c.execute('CREATE TABLE IF NOT EXISTS users (email TEXT PRIMARY KEY, name TEXT, password TEXT)')
     
-    # Permanent default product list with perfect images and descriptions
     defaults = [
         # Electronics
         ("Wireless Noise-Cancelling Headphones", "Electronics", 3499.0, 5999.0, "Active Noise Cancellation, 40-hour battery life, crystal-clear hands-free calling.", 4.7, 14, "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500"),
@@ -53,10 +52,14 @@ def init_db():
         ("Atomic Habits by James Clear", "Books", 499.0, 799.0, "Bestselling self-improvement and practical habit-building guide book.", 4.9, 35, "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500")
     ]
     
-    # Using INSERT OR REPLACE ensures correct images and data stay permanently updated
+    # NEW LOGIC: This correctly updates images WITHOUT breaking the "Add to Cart" button!
     for p in defaults:
-        c.execute('''INSERT OR REPLACE INTO products (name, category, price, original_price, description, rating, stock, image) 
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', p)
+        c.execute("SELECT id FROM products WHERE name=?", (p[0],))
+        data = c.fetchone()
+        if data is None:
+            c.execute('''INSERT INTO products (name, category, price, original_price, description, rating, stock, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', p)
+        else:
+            c.execute('''UPDATE products SET category=?, price=?, original_price=?, description=?, rating=?, stock=?, image=? WHERE name=?''', (p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[0]))
                      
     conn.commit()
     conn.close()
@@ -72,7 +75,7 @@ if 'cart' not in st.session_state:
     st.session_state.cart = {}
 
 # ==========================================
-# 2. Secret Admin Panel (Inventory & Registered Users)
+# 2. Secret Admin Panel
 # ==========================================
 if st.query_params.get("admin") == "true":
     st.title("⚙️ NexaMart Admin Panel")
@@ -285,8 +288,8 @@ else:
                 with col_buy:
                     st.write("")
                     st.write("")
-                    # English Warning if not logged in
-                    if st.button("Add to Cart 🛒", key=f"add_{row['id']}", use_container_width=True):
+                    # NEW KEY: Using row['name'] so the button never breaks!
+                    if st.button("Add to Cart 🛒", key=f"add_cart_{row['name']}", use_container_width=True):
                         if st.session_state.logged_in_email is None:
                             st.warning("⚠️ Please login or sign up from the sidebar to add products to your cart!")
                         else:
